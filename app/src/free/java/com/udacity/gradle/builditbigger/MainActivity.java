@@ -6,8 +6,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
 
 import com.example.alexanderst.androidjokes.JokesActivity;
+
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
@@ -18,6 +20,7 @@ interface JokeRetrievedCallback {
 
 public class MainActivity extends AppCompatActivity implements JokeRetrievedCallback {
 
+    private ProgressBar mProgressBar;
     InterstitialAd mInterstitialAd;
     // These 2 variables below are used for synchronization between calls to function
     // onJokeRetrieved(...) and onAdClosed(). The functions are both called on UI thread so
@@ -27,6 +30,7 @@ public class MainActivity extends AppCompatActivity implements JokeRetrievedCall
     boolean mShowingAd;
 
     public void onJokeRetrieved(String joke) {
+        mProgressBar.setVisibility(View.GONE);
         if (mShowingAd) {
             //Ad is still shown, let's store joke text so that the joke
             //can be shown as soon as the ad is closed by the user
@@ -48,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements JokeRetrievedCall
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mProgressBar=(ProgressBar)findViewById(R.id.progressBar);
+        mProgressBar.setVisibility(View.GONE);
 
         mInterstitialAd = new InterstitialAd(this);
         mInterstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712");
@@ -100,13 +106,14 @@ public class MainActivity extends AppCompatActivity implements JokeRetrievedCall
 
     public void tellJoke(View view){
         mJoke = null;
-
         new EndpointsAsyncTask(this).execute();
-
         //If ad is loaded show the ad while joke is being retrieved
         mShowingAd = mInterstitialAd.isLoaded();
+        //Show ad if it is ready, otherwise show progress bar
         if (mShowingAd)
             mInterstitialAd.show();
+        else
+            mProgressBar.setVisibility(View.VISIBLE);
     }
 
 
